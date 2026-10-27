@@ -18,7 +18,7 @@ import { defineTool } from './lib/toolkit.mjs';
 import { createScout } from './lib/scout.mjs';
 import { readConfig, writeConfig, DEFAULTS } from './lib/config.mjs';
 import { sub } from './lib/paths.mjs';
-import { runRound, readLog, isRunning, stopRound } from './lib/runner.mjs';
+import { runRound, readLog, isRunning, stopRound, readLastRound } from './lib/runner.mjs';
 
 export const name = 'tieba-scout';
 // webServer 不要写进 inject：headless 里没有这个服务，写进去整个插件会 pending。
@@ -215,6 +215,7 @@ export function apply(ctx, config = {}) {
         times: cfg.times,
         running: isRunning(),
         schedule: { date: sch.date, done: Object.keys(sch.done ?? {}) },
+        lastRound: readLastRound(),
         log: readLog({ lines: 20 }).text?.slice(-400) ?? '',
       };
     },
@@ -252,6 +253,10 @@ export function apply(ctx, config = {}) {
       log(`到点 ${hhmm}，起一轮 headless`);
       const result = await runRound({ profile: cfg.headlessProfile, dshBin: cfg.dshBin });
       log(result.ok ? `这一轮跑完了：${result.log}` : `这一轮失败：${result.error ?? result.code}`);
+      if (!result.ok) {
+        // 一轮失败不应该让插件崩，也不该每分钟重试：这个点已经记成「跑过了」。
+        log('（今天这个点不会再自动重试；手动调 tieba_learn 或改 times）');
+      }
     }, 30_000);
     return () => clearInterval(timer);
   }, 'tieba-scout: 定时一轮');

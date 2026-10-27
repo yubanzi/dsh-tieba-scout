@@ -56,9 +56,21 @@ tool({
 
 - 纯逻辑 → `test/gates.mjs`，`t('名字', () => { ... })`，一行断言一件事；
 - 依赖真实响应 → 放 fixture 到 `test/fixtures/`，在 `test/smoke.mjs` 里断言；
-- 插件装配 → `test/apply.mjs`。
+- 插件装配 → `test/apply.mjs`；
+- 定时子进程 → `test/runner.mjs`（假 dsh，不联网不调模型）。
 
-`t()` 是同步的：要断言异步结果，先 `await` 出来再断言。
+`t()` 在 gates/smoke 里是同步的：要断言异步结果，先 `await` 出来再断言。
+`test/runner.mjs` 里的 `t()` 是 async 的，那边要 `await t(...)`。
+
+## 定时那一路的坑（改之前先读）
+
+- **不要 spawn `.cmd` 当命令**：Node 会给参数加引号，cmd 不认 `\"`，报
+  `'\"G:\...\"' 不是内部或外部命令`。能从壳的位置推出 Electron + `cli.js` 就直接调，
+  参数数组原样传；实在要过 cmd，命令串最外层得再包一层引号 + `windowsVerbatimArguments`。
+- **长 prompt 不能上命令行**：引号和换行会被任何 shell 拆坏。落成文件，只传路径。
+- **app.asar 里的路径 `fs.existsSync` 永远是 false**（对普通 node 来说它就是个文件），
+  只验外壳 `.exe` 在不在。
+- **配置里给了路径就别再猜**：猜出来的「另一个 dsh」只会让人对着怪报错查半天。
 
 ## 提交前
 
@@ -66,4 +78,4 @@ tool({
 npm test
 ```
 
-45 项全绿再提交。测试跑不动（网络/环境）说明改坏了什么，不是测试的问题。
+55 项全绿再提交。测试跑不动（网络/环境）说明改坏了什么，不是测试的问题。

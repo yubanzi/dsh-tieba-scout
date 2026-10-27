@@ -89,6 +89,16 @@ dsh plugin --profile web add link:/path/to/dsh-tieba-scout
 子进程的日志在 `$DSH_HOME/tieba-scout/logs/run-YYYY-MM-DD.log`（超长 prompt 会先落成 `prompt-*.md` 再传路径）。
 一轮最多 20 分钟，超时会被杀；同一时间只允许一轮（`round.lock`）；
 子进程里 `TIEBA_SCOUT_NO_SCHEDULE=1`，不会自己再套一层。
+上一轮的结果记在 `last-round.json`，`tieba_status` 里能看到一句话，不用去翻日志。
+
+**这一条有前提**：跑一轮要起 `dsh <profile> "<指令>"`，那个 profile 得有能用的模型路由。
+桌面版把密钥存在应用里、只在它自己进程里注入，子进程拿不到就会报
+`MISSING_CREDENTIAL`——插件会把它翻译成「给启动环境加 DEEPSEEK_API_KEY」。
+所以：
+
+- 只有 **DSH 装在 PATH 上**、或配置里写清 `dshBin`，定时才起得来
+  （桌面版的 CLI 在 `<安装目录>/resources/runtime/cli/bin/dsh.cmd`，插件会自己找）；
+- 找不到时不会静默失败：日志和 `tieba_status.lastRound` 里都有一句能照做的话。
 
 不想让它自己跑就 `"autoRun": false`，聊天里喊一句再学。默认就是关的。
 
@@ -169,13 +179,14 @@ sign = md5(按 key 排序拼 "k=v" + salt)
 ## 测试
 
 ```bash
-npm test          # 45 项：fixture 解析 + 纯函数 + 挂载
+npm test          # 55 项：fixture 解析 + 纯函数 + 挂载 + 定时管道
 node scripts/capture-fixtures.mjs [吧名]   # 重新抓真实响应（改版后跑这个）
 ```
 
 - `test/fixtures/` 是真实响应（人气榜 / 推荐吧 / 吧列表 / 楼层），解析器改坏了会立刻红；
 - `test/gates.mjs` 覆盖签名（含两枚真值）、配置归一化、挑吧冷却、卡片去重与检索；
-- `test/apply.mjs` 用假 ctx 装一遍插件，确认工具注册和卸载都干净。
+- `test/apply.mjs` 用假 ctx 装一遍插件，确认工具注册和卸载都干净；
+- `test/runner.mjs` 用一个假 dsh 验证定时那一路：prompt 落文件、锁会放、日志会写、失败会翻译成人话。
 
 ## 已知边界
 
