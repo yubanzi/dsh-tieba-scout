@@ -1,0 +1,55 @@
+{
+  "name": "dsh-tieba-scout",
+  "version": "0.1.0",
+  "description": "DSH 插件 · 贴吧探子：自己挑人气高的吧，读帖取见闻，提炼成可检索的笔记卡片。只读，匿名，不碰登录态。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "tieba",
+    "baidu",
+    "crawler"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./core": "./lib/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "prompts",
+    "cordis.patch.yml",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "dsh": ">=0.1.7-rc.1",
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs && node test/gates.mjs && node test/apply.mjs",
+    "test:smoke": "node test/smoke.mjs",
+    "test:gates": "node test/gates.mjs",
+    "test:apply": "node test/apply.mjs",
+    "capture": "node scripts/capture-fixtures.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yubanzi/dsh-tieba-scout.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    }
+  }
+}

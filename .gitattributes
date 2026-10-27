@@ -1,0 +1,6 @@
+# 统一用 LF：这仓库要在 Windows 上写、在 Linux CI 上跑，
+# 不一致的话 fixture 的字节数和测试的 diff 都会莫名其妙。
+* text=auto eol=lf
+
+# 真实响应 fixture 是机器生成的 JSON，不做换行转换（也免得 git 说它被改过）
+test/fixtures/*.json -text

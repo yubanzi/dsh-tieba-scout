@@ -1,0 +1,13 @@
+node_modules/
+logs/
+*.log
+.DS_Store
+Thumbs.db
+
+# 运行时数据：卡片库、熔断状态、锁文件都在 $DSH_HOME，不该进仓库。
+# 但如果谁在仓库里跑测试留了副本，也别提交上去。
+tieba-scout/
+notes.json
+cooldown.json
+schedule.json
+round.lock
